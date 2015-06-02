@@ -1,0 +1,60 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context="com.aashishsatya.waitforit.NewAlarm">
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/train_no"
+        android:hint="@string/msg_train_no"
+        android:layout_alignParentTop="true"
+        android:layout_alignLeft="@+id/textView"
+        android:layout_alignStart="@+id/textView"
+        android:layout_marginTop="106dp" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Wait For It"
+        android:id="@+id/find_details"
+        android:onClick="onClick"
+        android:layout_marginBottom="97dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="get stations"
+        android:id="@+id/get_stations"
+        android:onClick="getStations"
+        android:layout_alignBottom="@+id/train_no"
+        android:layout_toRightOf="@+id/train_no"
+        android:layout_toEndOf="@+id/train_no"
+        android:layout_marginLeft="44dp"
+        android:layout_marginStart="44dp" />
+
+    <Spinner
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:id="@+id/spinner"
+        android:layout_centerVertical="true"
+        android:layout_toEndOf="@+id/train_no" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select Your Station:"
+        android:id="@+id/textView"
+        android:textSize="18dp"
+        android:layout_alignTop="@+id/spinner"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignRight="@+id/find_details"
+        android:layout_alignEnd="@+id/find_details" />
+
+</RelativeLayout>
