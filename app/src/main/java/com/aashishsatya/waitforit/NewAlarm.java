@@ -37,8 +37,13 @@ public class NewAlarm extends ActionBarActivity {
     EditText trainNo;
     String trainNoStr;
     String url;
-    String FILENAME = "waitdetails.txt";
-    String STATION_DETAILS = "stationdetails";
+    static String FILENAME = "waitdetails.txt";
+    static String STATION_DETAILS = "stationdetails";
+    static String SELECTED_STATION = "stationselected";
+    static String TRAIN_NO = "train_no";
+    static String TAG_TOTAL = "total";
+    static String TAG_STATIONS = "route";
+    static String TAG_STATION_NAME = "station";
 
     Context thisContext = this;
 
@@ -91,12 +96,15 @@ public class NewAlarm extends ActionBarActivity {
                 e.printStackTrace();
             }
 
+            // delete file for now
+            // we will remove this later and delete the file only when the alarm has
+            // been set off
             File dir = getFilesDir();
             File file = new File(dir, FILENAME);
             boolean deleted = file.delete();
 
 
-            Toast.makeText(thisContext, jsonStr, Toast.LENGTH_LONG).show();
+            //Toast.makeText(thisContext, jsonStr, Toast.LENGTH_LONG).show();
         }
         catch (FileNotFoundException e)
         {
@@ -104,7 +112,22 @@ public class NewAlarm extends ActionBarActivity {
         }
 
         Intent confirmDetailsIntent = new Intent(this, ConfirmDetails.class);
+
+        // put the JSON String that we obtained
         confirmDetailsIntent.putExtra(STATION_DETAILS, jsonStr);
+
+        // we still need the position number of the item selected on the spinner
+        Spinner spinner = (Spinner) findViewById(R.id.spinner);
+        int itemPosition = spinner.getSelectedItemPosition();
+        confirmDetailsIntent.putExtra(SELECTED_STATION, itemPosition);
+
+        // we also need the train number
+
+        EditText trainNo = (EditText) findViewById(R.id.train_no);
+        String trainNumber = trainNoStr;
+        confirmDetailsIntent.putExtra(TRAIN_NO, trainNoStr);
+
+        // start the activity to confirm the details
         startActivity(confirmDetailsIntent);
 
     }
@@ -146,9 +169,6 @@ public class NewAlarm extends ActionBarActivity {
     public class GetTrainDetails extends AsyncTask<Void, Void, Void> {
 
         String jsonStr;    // the string obtained after the JSON Query
-        String TAG_TOTAL = "total";
-        String TAG_STATIONS = "route";
-        String TAG_STATION_NAME = "station";
 
         public ArrayList<String> stationsList;
         JSONArray stationsDetails;
@@ -181,14 +201,14 @@ public class NewAlarm extends ActionBarActivity {
                 stationsDetails = jsonObject.getJSONArray(TAG_STATIONS);
                 int noOfStations = jsonObject.getInt(TAG_TOTAL);
 
-                Log.d("StationDetails: ", stationsDetails.toString());
+                //Log.d("StationDetails: ", stationsDetails.toString());
 
                 for (int i = 0; i < noOfStations; i++)
                 {
                     singleStation = stationsDetails.getJSONObject(i);
-                    Log.d("Adding ", singleStation.getString(TAG_STATION_NAME));
+                    //Log.d("Adding ", singleStation.getString(TAG_STATION_NAME));
                     stationsList.add(singleStation.getString(TAG_STATION_NAME));
-                    Log.d("Done ", "adding.");
+                    //Log.d("Done ", "adding.");
                 }
 
                 //Toast.makeText(thisContext, "Making spinner", Toast.LENGTH_LONG).show();
@@ -277,13 +297,8 @@ public class NewAlarm extends ActionBarActivity {
                         fOut = openFileOutput(FILENAME, MODE_WORLD_READABLE);
                         try
                         {
-                            fOut.write(stationsDetails.getJSONObject(position).toString().getBytes());
+                            fOut.write(jsonStr.getBytes());
                             fOut.close();
-                        }
-                        catch (JSONException e)
-                        {
-                            Log.d("JSON Error: ", e.getMessage());
-                            e.printStackTrace();
                         }
                         catch (java.io.IOException e)
                         {

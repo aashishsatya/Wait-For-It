@@ -30,6 +30,14 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.aashishsatya.waitforit.NewAlarm" />
         </activity>
+        <activity
+            android:name=".SetAlarm"
+            android:label="@string/title_activity_set_alarm"
+            android:parentActivityName=".ConfirmDetails" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.aashishsatya.waitforit.ConfirmDetails" />
+        </activity>
     </application>
 
 </manifest>

@@ -7,4 +7,5 @@
     <string name="msg_train_no">Enter Train Number</string>
     <string name="msg_dest">Enter destination station</string>
     <string name="title_activity_confirm_details">ConfirmDetails</string>
+    <string name="title_activity_set_alarm">SetAlarm</string>
 </resources>

@@ -6,6 +6,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -28,6 +29,14 @@ public class MainActivity extends ActionBarActivity {
         Context context = this;
         String filename = "waitdetails.txt";
 
+        // delete file for now
+        // we will remove this later and delete the file only when the alarm has
+        // been set off
+        /*
+        File dir = getFilesDir();
+        File file = new File(dir, filename);
+        boolean deleted = file.delete();*/
+
         try
         {
             FileInputStream fis = context.openFileInput(filename);
@@ -38,6 +47,7 @@ public class MainActivity extends ActionBarActivity {
             while ((line = bufferedReader.readLine()) != null) {
                 sb.append(line).append("\n");
             }
+            Toast.makeText(this, sb.toString(), Toast.LENGTH_LONG).show();
         }
         catch (Exception e)
         {
