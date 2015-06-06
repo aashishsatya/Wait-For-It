@@ -4,6 +4,10 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <receiver
+        android:name=".AlarmReceiver"
+        android:enabled="true" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -19,24 +23,28 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".NewAlarm"
+            android:name=".SetTrainAndStation"
             android:label="@string/title_activity_new_alarm" >
         </activity>
         <activity
-            android:name=".ConfirmDetails"
+            android:name=".ConfirmTrainAndStation"
             android:label="@string/title_activity_confirm_details"
-            android:parentActivityName=".NewAlarm" >
+            android:parentActivityName=".SetTrainAndStation" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.aashishsatya.waitforit.NewAlarm" />
+                android:value=".SetTrainAndStation" />
         </activity>
         <activity
-            android:name=".SetAlarm"
+            android:name=".ActiveAlarm"
             android:label="@string/title_activity_set_alarm"
-            android:parentActivityName=".ConfirmDetails" >
+            android:parentActivityName=".ConfirmTrainAndStation" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.aashishsatya.waitforit.ConfirmDetails" />
+                android:value=".ConfirmTrainAndStation" />
+        </activity>
+        <activity
+            android:name=".AlarmReceiverActivity"
+            android:label="@string/title_activity_alarm_receiver" >
         </activity>
     </application>
 

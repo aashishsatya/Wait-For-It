@@ -12,6 +12,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.util.Set;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -27,19 +28,18 @@ public class MainActivity extends ActionBarActivity {
          */
 
         Context context = this;
-        String filename = "waitdetails.txt";
 
         // delete file for now
         // we will remove this later and delete the file only when the alarm has
         // been set off
-        /*
+
         File dir = getFilesDir();
-        File file = new File(dir, filename);
-        boolean deleted = file.delete();*/
+        File file = new File(dir, SetTrainAndStation.FILENAME);
+        boolean deleted = file.delete();
 
         try
         {
-            FileInputStream fis = context.openFileInput(filename);
+            FileInputStream fis = context.openFileInput(SetTrainAndStation.FILENAME);
             InputStreamReader isr = new InputStreamReader(fis, "UTF-8");
             BufferedReader bufferedReader = new BufferedReader(isr);
             StringBuilder sb = new StringBuilder();
@@ -54,7 +54,7 @@ public class MainActivity extends ActionBarActivity {
             // no file
             // so send user to the activity that sets an alarm
 
-            Intent intent = new Intent(this, NewAlarm.class);
+            Intent intent = new Intent(this, SetTrainAndStation.class);
             startActivity(intent);
         }
     }

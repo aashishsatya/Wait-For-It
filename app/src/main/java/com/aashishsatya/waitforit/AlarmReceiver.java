@@ -21,7 +21,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 
         // get the new details
 
-        // update the alarm
+        // update the single alarm
 
         // delete the old file
 

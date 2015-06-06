@@ -8,4 +8,6 @@
     <string name="msg_dest">Enter destination station</string>
     <string name="title_activity_confirm_details">ConfirmDetails</string>
     <string name="title_activity_set_alarm">SetAlarm</string>
+    <string name="title_activity_alarm_receiver">AlarmReceiverActivity</string>
+    <string name="stop_alarm">Stop Alarm</string>
 </resources>

@@ -13,44 +13,55 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
 
-public class NewAlarm extends ActionBarActivity {
+public class SetTrainAndStation extends ActionBarActivity {
 
-    // global constants
-    // dirty engineering if there was any
+    /* these (global?) variables (I felt) are needed because their values are computed in GetTrainDetails().execute().
+    They need to be passed to the next activity (ConfirmTrainAndStation), for which we need the onConfirm function of this
+    class to be aware of their details.
+    I'm aware that using global constants is discouraged, so if someone has a better (by which I mean cleaner :-))
+    idea as to how to go about this, I'll be happy to implement it.
+     */
 
-    EditText trainNo;
     String trainNoStr;
+    String trainNameStr;
     String url;
+    String jsonStr;
+
+    // these are mostly for passing strings to other activities
     static String FILENAME = "waitdetails.txt";
-    static String STATION_DETAILS = "stationdetails";
-    static String SELECTED_STATION = "stationselected";
-    static String TRAIN_NO = "train_no";
+    static String ALL_STATION_DETAILS_JSON_STR = "allstationdetailsjsonstr";
+    static String SELECTED_STATION_POSITION = "selectedstation";
+    static String SELECTED_STATION_NAME = "selectedstationname";
+    static String TRAIN_NAME = "trainname";
+    static String TRAIN_NO = "trainno";
+
+    // these are for getting the required field from the JSON Object
     static String TAG_TOTAL = "total";
-    static String TAG_STATIONS = "route";
+    static String TAG_ALL_STATION_DETAILS = "route";
     static String TAG_STATION_NAME = "station";
+    static String TAG_TRAIN_STATUS = "position";
+    static String TAG_ACT_DEPT = "actdep";
+    static String TAG_SCH_DEPT = "schdep";
+    static String TAG_ACT_ARR = "actarr";
+    static String TAG_SCH_ARR = "scharr";
+    static String TAG_TRAIN_NO = "train_number";
+    static String TAG_STATION_STATUS = "status";
 
     Context thisContext = this;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_new_alarm);
+        setContentView(R.layout.activity_set_train_and_station);
     }
 
     @Override
@@ -78,7 +89,8 @@ public class NewAlarm extends ActionBarActivity {
     public void onClick(View view)
     {
         // read text from file waitdetails.txt and send to next activity
-        String jsonStr = "";
+        // String jsonStr = "";
+        /*
         try
         {
             FileInputStream fin = openFileInput(FILENAME);
@@ -110,24 +122,31 @@ public class NewAlarm extends ActionBarActivity {
         {
             e.printStackTrace();
         }
-
-        Intent confirmDetailsIntent = new Intent(this, ConfirmDetails.class);
-
-        // put the JSON String that we obtained
-        confirmDetailsIntent.putExtra(STATION_DETAILS, jsonStr);
+        */
 
         // we still need the position number of the item selected on the spinner
         Spinner spinner = (Spinner) findViewById(R.id.spinner);
         int itemPosition = spinner.getSelectedItemPosition();
-        confirmDetailsIntent.putExtra(SELECTED_STATION, itemPosition);
+        String selectedStationNameStr = (String) spinner.getSelectedItem();
 
-        // we also need the train number
+        Intent confirmDetailsIntent = new Intent(this, ConfirmTrainAndStation.class);
 
-        EditText trainNo = (EditText) findViewById(R.id.train_no);
-        String trainNumber = trainNoStr;
+        Log.d("jsonStrAash>:", jsonStr);
+        Log.d("trainNameStr:>", trainNameStr);
+
+        // put all the extras
+        // put the JSON String that we obtained
+        confirmDetailsIntent.putExtra(ALL_STATION_DETAILS_JSON_STR, jsonStr);
+        // put the position number of the item that was selected
+        confirmDetailsIntent.putExtra(SELECTED_STATION_POSITION, itemPosition);
+        // put the train number
         confirmDetailsIntent.putExtra(TRAIN_NO, trainNoStr);
+        // put the train name
+        confirmDetailsIntent.putExtra(TRAIN_NAME, trainNameStr);
+        // put the station name
+        confirmDetailsIntent.putExtra(SELECTED_STATION_NAME, selectedStationNameStr);
 
-        // start the activity to confirm the details
+        // start the activity that lets user confirm the details
         startActivity(confirmDetailsIntent);
 
     }
@@ -138,7 +157,7 @@ public class NewAlarm extends ActionBarActivity {
         String API_KEY = "bin87gv4273";
 
         // get the train number that was entered
-        trainNo = (EditText) findViewById(R.id.train_no);
+        EditText trainNo = (EditText) findViewById(R.id.train_no);
         trainNoStr = trainNo.getText().toString();
 
         /*
@@ -168,10 +187,10 @@ public class NewAlarm extends ActionBarActivity {
      * */
     public class GetTrainDetails extends AsyncTask<Void, Void, Void> {
 
-        String jsonStr;    // the string obtained after the JSON Query
+        //String jsonStr;    // the string obtained after the JSON Query
 
-        public ArrayList<String> stationsList;
-        JSONArray stationsDetails;
+        public ArrayList<String> stationsListStrForSpinner;
+        JSONArray allStationsDetailsJSONArr;
 
         @Override
         protected void onPreExecute() {
@@ -186,29 +205,48 @@ public class NewAlarm extends ActionBarActivity {
 
             // Making a request to url and getting response
             jsonStr = sh.makeServiceCall(url, ServiceHandler.GET);
-            Log.d("jsonStr", "> " + jsonStr);
+            //Log.d("jsonStr", "> " + jsonStr);
 
             // jsonStr now has the string in JSON
             // now to create the spinner for selecting the station
 
             // build a new ArrayList for setting as options to the spinner
-            stationsList = new ArrayList<String>();
-            JSONObject singleStation;
+            stationsListStrForSpinner = new ArrayList<String>();
+            JSONObject singleStationDetailJSONObj;
 
             try
             {
                 JSONObject jsonObject = new JSONObject(jsonStr);
-                stationsDetails = jsonObject.getJSONArray(TAG_STATIONS);
+                allStationsDetailsJSONArr = jsonObject.getJSONArray(TAG_ALL_STATION_DETAILS);
                 int noOfStations = jsonObject.getInt(TAG_TOTAL);
 
-                //Log.d("StationDetails: ", stationsDetails.toString());
+                //Log.d("StationDetails: ", allStationsDetailsJSONArr.toString());
 
                 for (int i = 0; i < noOfStations; i++)
                 {
-                    singleStation = stationsDetails.getJSONObject(i);
-                    //Log.d("Adding ", singleStation.getString(TAG_STATION_NAME));
-                    stationsList.add(singleStation.getString(TAG_STATION_NAME));
+                    singleStationDetailJSONObj = allStationsDetailsJSONArr.getJSONObject(i);
+                    //Log.d("Adding ", singleStationDetailJSONObj.getString(TAG_STATION_NAME));
+                    stationsListStrForSpinner.add(singleStationDetailJSONObj.getString(TAG_STATION_NAME));
                     //Log.d("Done ", "adding.");
+                }
+
+                // find the train name
+                trainNameStr = "";
+                String trainStatus = jsonObject.getString(TAG_TRAIN_STATUS);
+                if (trainStatus.equals("null"))
+                {
+                    trainNameStr = "N/A";
+                }
+                else
+                {
+                    for (int i = 1; i < trainStatus.length() - 2; i++) {
+                        if (trainStatus.charAt(i) == 'i' && trainStatus.charAt(i + 1) == 's' && trainStatus.charAt(i + 2) == ' ') {
+                            // we've reached an 'is'
+                            // we can stop
+                            break;
+                        }
+                        trainNameStr += trainStatus.charAt(i);
+                    }
                 }
 
                 //Toast.makeText(thisContext, "Making spinner", Toast.LENGTH_LONG).show();
@@ -274,10 +312,10 @@ public class NewAlarm extends ActionBarActivity {
             super.onPostExecute(result);
 
             Spinner spinner = (Spinner) findViewById(R.id.spinner);
-            Log.d("stationsList = ", stationsList.toString());
+            //Log.d("stationsListStrForSpinner = ", stationsListStrForSpinner.toString());
 
-            ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(thisContext, android.R.layout.simple_spinner_item, stationsList);
-            Log.d("Here ", "is not the error");
+            ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<String>(thisContext, android.R.layout.simple_spinner_item, stationsListStrForSpinner);
+            //Log.d("Here ", "is not the error");
             spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item); // The drop down view
             spinner.setAdapter(spinnerArrayAdapter);
 
@@ -290,6 +328,8 @@ public class NewAlarm extends ActionBarActivity {
                     // this checks if an alarm exists or not from the first activity
 
                     // these exceptions probably won't even arise
+
+                    /*
 
                     FileOutputStream fOut;
                     try
@@ -312,6 +352,8 @@ public class NewAlarm extends ActionBarActivity {
                         Log.d("File not found: ", e.getMessage());
                         e.printStackTrace();
                     }
+
+                    */
                 }
 
                 @Override
