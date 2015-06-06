@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.SystemClock;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -55,6 +56,7 @@ public class ActiveAlarm extends ActionBarActivity {
     static PendingIntent updateAlarmPIntent;
 
     static AlarmManager alarmManager;
+    //static AlarmManager updateAlarmManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,8 +99,10 @@ public class ActiveAlarm extends ActionBarActivity {
     {
         // cancel the set alarm
 
-        if (alarmManager != null)
+        if (alarmManager != null) {
             alarmManager.cancel(destReachedPIntent);
+            alarmManager.cancel(updateAlarmPIntent);
+        }
 
         // delete the file with the details
         File dir = getFilesDir();
@@ -192,7 +196,7 @@ public class ActiveAlarm extends ActionBarActivity {
             // debug
 
             String date = new SimpleDateFormat("dd-MM-yyyy").format(new Date());
-            actTimeArrivalStr = date + " " + "8:20 PM"; // replace time by actTimeArrivalStr
+            actTimeArrivalStr = date + " " + "02:58 AM"; // replace time by actTimeArrivalStr
             Log.d("ETAWithDate>", actTimeArrivalStr);
 
             // convert the date to SimpleDateFormat first
@@ -233,19 +237,16 @@ public class ActiveAlarm extends ActionBarActivity {
             Intent destReachedIntent = new Intent(ActiveAlarm.this, AlarmReceiverActivity.class);
             destReachedPIntent = PendingIntent.getActivity(ActiveAlarm.this,
                     12345, destReachedIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-            alarmManager =
-                    (AlarmManager)getSystemService(Activity.ALARM_SERVICE);
+            alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
             alarmManager.set(AlarmManager.RTC_WAKEUP, arrivalTimeForAlarm.getTimeInMillis(),
                     destReachedPIntent);
 
             // set the multiple alarm
             Intent updateAlarmIntent = new Intent(ActiveAlarm.this, AlarmReceiver.class);
-            updateAlarmPIntent = PendingIntent.getBroadcast(ActiveAlarm.this, 0, updateAlarmIntent, 0);
-            alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, System.currentTimeMillis() + TEN_MINUTES_IN_MILLI_SECONDS,
+            alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+            updateAlarmPIntent = PendingIntent.getBroadcast(ActiveAlarm.this, 0, updateAlarmIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+            alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + TEN_MINUTES_IN_MILLI_SECONDS,
                     TEN_MINUTES_IN_MILLI_SECONDS, updateAlarmPIntent);
-
-
-
 
 
             // set the text in the TextViews
