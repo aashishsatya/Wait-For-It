@@ -99,9 +99,13 @@ public class ActiveAlarm extends ActionBarActivity {
     {
         // cancel the set alarm
 
-        if (alarmManager != null) {
+        try {
             alarmManager.cancel(destReachedPIntent);
             alarmManager.cancel(updateAlarmPIntent);
+        }
+        catch (Exception e)
+        {
+            Log.d("ErrorCancelingAlarm>", e.getMessage());
         }
 
         // delete the file with the details
@@ -196,7 +200,7 @@ public class ActiveAlarm extends ActionBarActivity {
             // debug
 
             String date = new SimpleDateFormat("dd-MM-yyyy").format(new Date());
-            actTimeArrivalStr = date + " " + "02:58 AM"; // replace time by actTimeArrivalStr
+            actTimeArrivalStr = date + " " + "06:28 PM"; // replace time by actTimeArrivalStr
             Log.d("ETAWithDate>", actTimeArrivalStr);
 
             // convert the date to SimpleDateFormat first

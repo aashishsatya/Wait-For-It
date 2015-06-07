@@ -47,8 +47,7 @@
 
         <service
             android:name=".MyAlarmService"
-            android:enabled="true"
-            android:exported="true" >
+            android:enabled="true" >
         </service>
     </application>
 

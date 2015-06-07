@@ -30,7 +30,12 @@ public class AlarmReceiver extends BroadcastReceiver {
         // but for now let's just show a toast
 
         Log.d("AlarmFlag>", "Alarm was here");
-        Toast.makeText(context, "Alarm sounded", Toast.LENGTH_LONG).show();
+
+        Intent service1 = new Intent(context, MyAlarmService.class);
+        context.startService(service1);
+        context.stopService(service1);
+
+        Toast.makeText(context, "Alarm sounded, finished services", Toast.LENGTH_SHORT).show();
 
     }
 }

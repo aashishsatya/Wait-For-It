@@ -33,9 +33,9 @@ public class MainActivity extends ActionBarActivity {
         // we will remove this later and delete the file only when the alarm has
         // been set off
 
-        File dir = getFilesDir();
+        /*File dir = getFilesDir();
         File file = new File(dir, SetTrainAndStation.FILENAME);
-        boolean deleted = file.delete();
+        boolean deleted = file.delete();*/
 
         try
         {

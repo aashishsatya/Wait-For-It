@@ -8,6 +8,7 @@ import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
@@ -30,6 +31,23 @@ public class AlarmReceiverActivity extends Activity {
         setContentView(R.layout.activity_alarm_receiver);
 
         playSound(this, getAlarmUri());
+
+        // cancel the other repeating alarm
+        try
+        {
+            ActiveAlarm.alarmManager.cancel(ActiveAlarm.updateAlarmPIntent);
+        }
+        catch (Exception e)
+        {
+            Log.d("Error cancelling alarm>", e.getMessage());
+        }
+
+        // delete the file that stores the alarm details
+        File dir = getFilesDir();
+        File file = new File(dir, SetTrainAndStation.FILENAME);
+        boolean deleted = file.delete();
+
+        Log.d("Deleted file>", "file deleted");
     }
 
     private void playSound(Context context, Uri alert) {
@@ -67,15 +85,6 @@ public class AlarmReceiverActivity extends Activity {
     public void onStopAlarm(View view)
     {
         mMediaPlayer.stop();
-
-        // cancel the other repeating alarm
-        if (ActiveAlarm.alarmManager != null)
-            ActiveAlarm.alarmManager.cancel(ActiveAlarm.updateAlarmPIntent);
-
-        // delete the file that stores the alarm details
-        File dir = getFilesDir();
-        File file = new File(dir, SetTrainAndStation.FILENAME);
-        boolean deleted = file.delete();
 
         // go to the activity that lets users set another alarm
         Intent setTrainAndStationIntent = new Intent(this, SetTrainAndStation.class);
