@@ -1,6 +1,5 @@
 package com.aashishsatya.waitforit;
 
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -11,17 +10,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 
 public class ConfirmTrainAndStation extends ActionBarActivity {
@@ -30,6 +23,7 @@ public class ConfirmTrainAndStation extends ActionBarActivity {
     String trainNameStr;
     String stationNameStr;
     String trainNoStr;
+    String etaStr;
 
     // needed for setting the alarm
     String actTimeArrivalStr;
@@ -47,6 +41,7 @@ public class ConfirmTrainAndStation extends ActionBarActivity {
         TextView trainNo = (TextView) findViewById(R.id.train_no);
         TextView stationName = (TextView) findViewById(R.id.station_name);
         TextView trainName = (TextView) findViewById(R.id.train_name);
+        TextView eta = (TextView) findViewById(R.id.eta_tv);
 
         // get the strings and position
         Intent intent = getIntent();
@@ -55,55 +50,15 @@ public class ConfirmTrainAndStation extends ActionBarActivity {
         trainNameStr = intent.getStringExtra(SetTrainAndStation.TRAIN_NAME);
         stationNameStr = intent.getStringExtra(SetTrainAndStation.SELECTED_STATION_NAME);
         trainNoStr = intent.getStringExtra(SetTrainAndStation.TRAIN_NO);
+        etaStr = intent.getStringExtra(SetTrainAndStation.STATION_ETA);
         selectedStationPosition = intent.getIntExtra(SetTrainAndStation.SELECTED_STATION_POSITION, 0);
-
-        /*
-        OLD CODE, CAN BE DELETED LATER
-        try
-        {
-
-            JSONObject jsonObject = new JSONObject(jsonStr);
-            JSONArray stationsDetails = jsonObject.getJSONArray(SetTrainAndStation.TAG_ALL_STATION_DETAILS);
-            JSONObject currentStation = stationsDetails.getJSONObject(intent.getIntExtra(SetTrainAndStation.SELECTED_STATION_POSITION, 0));
-            // set the station name
-
-
-            // find the train name
-
-            String trainNameStr = "";
-            String trainStatus = jsonObject.getString("position");
-            if (trainStatus.equals("null"))
-            {
-                trainName.setText("N/A");
-            }
-            else
-            {
-                for (int i = 0; i < trainStatus.length() - 2; i++) {
-                    if (trainStatus.charAt(i) == 'i' && trainStatus.charAt(i + 1) == 's' && trainStatus.charAt(i + 2) == ' ') {
-                        // we've reached an is
-                        // we can stop
-                        break;
-                    }
-                    trainNameStr += trainStatus.charAt(i);
-                }
-                trainName.setText(trainNameStr);
-            }
-
-
-
-        }
-        catch (JSONException e)
-        {
-            e.printStackTrace();
-        }
-
-        */
+        Log.d("CTASetaStr>", etaStr);
 
         // set the relevant text fields
         stationName.setText(stationNameStr);
         trainNo.setText(trainNoStr);
-        Log.d("TrainNameConfirm>", trainNameStr);
         trainName.setText(trainNameStr);
+        eta.setText(etaStr);
 
     }
 
@@ -172,7 +127,8 @@ public class ConfirmTrainAndStation extends ActionBarActivity {
                 JSONObject reqdStationJSONObj = allStationDetails.getJSONObject(selectedStationPosition);
 
                 // write main details about the train
-                // write the train status
+                // CAREFUL WITH THE COMA
+                // write the train name
                 stringToWriteToFile += "{" + '"' + SetTrainAndStation.TRAIN_NAME + '"';
                 stringToWriteToFile += ":" + '"' + trainNameStr + '"' + ',';
                 // write the train number
@@ -200,10 +156,24 @@ public class ConfirmTrainAndStation extends ActionBarActivity {
                 stringToWriteToFile += ":" + '"' + reqdStationJSONObj.getString(SetTrainAndStation.TAG_ACT_ARR) + '"' + ',';
                 // write "schdep" and scheduled departing time
                 stringToWriteToFile += '"' + SetTrainAndStation.TAG_ACT_DEPT + '"';
-                stringToWriteToFile += ":" + '"' + reqdStationJSONObj.getString(SetTrainAndStation.TAG_ACT_DEPT) + '"';
+                stringToWriteToFile += ":" + '"' + reqdStationJSONObj.getString(SetTrainAndStation.TAG_ACT_DEPT) + '"' + ',';
+                // write "stationNo" and station position
+                stringToWriteToFile += '"' + SetTrainAndStation.SELECTED_STATION_POSITION + '"';
+                stringToWriteToFile += ":" + Integer.toString(selectedStationPosition);
+
                 stringToWriteToFile += "}" + '\n';
 
-                Log.d("stringToWrite>", stringToWriteToFile);
+                Log.d("CTASstringToWrite>", stringToWriteToFile);
+
+                try
+                {
+                    JSONObject test = new JSONObject(stringToWriteToFile);
+                    Log.d("CTASJSON>", "Successful JSON String generated");
+                }
+                catch (JSONException e)
+                {
+                    Log.d("CTASJSONError>", "Error in generated string for JSON");
+                }
 
                 FileOutputStream fOut;
                 try
@@ -240,9 +210,6 @@ public class ConfirmTrainAndStation extends ActionBarActivity {
         @Override
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
-
-
-
 
             // start the ActiveAlarm activity
             Intent intent = new Intent(thisContext, ActiveAlarm.class);

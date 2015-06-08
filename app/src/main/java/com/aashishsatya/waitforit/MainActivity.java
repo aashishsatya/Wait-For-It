@@ -29,25 +29,15 @@ public class MainActivity extends ActionBarActivity {
 
         Context context = this;
 
-        // delete file for now
-        // we will remove this later and delete the file only when the alarm has
-        // been set off
-
-        /*File dir = getFilesDir();
-        File file = new File(dir, SetTrainAndStation.FILENAME);
-        boolean deleted = file.delete();*/
-
         try
         {
             FileInputStream fis = context.openFileInput(SetTrainAndStation.FILENAME);
-            InputStreamReader isr = new InputStreamReader(fis, "UTF-8");
-            BufferedReader bufferedReader = new BufferedReader(isr);
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                sb.append(line).append("\n");
-            }
-            Toast.makeText(this, sb.toString(), Toast.LENGTH_LONG).show();
+
+            // file is available
+            // send user to ActiveAlarm
+
+            Intent intent = new Intent(this, ActiveAlarm.class);
+            startActivity(intent);
         }
         catch (Exception e)
         {

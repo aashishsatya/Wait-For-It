@@ -1,6 +1,5 @@
 package com.aashishsatya.waitforit;
 
-import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -13,22 +12,14 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -49,14 +40,12 @@ public class ActiveAlarm extends ActionBarActivity {
     String actTimeDeptStr;
     String schTimeDeptStr;
 
-    long TEN_MINUTES_IN_MILLI_SECONDS = 8000;
     Context thisContext = this;
-
     static PendingIntent destReachedPIntent;
     static PendingIntent updateAlarmPIntent;
+    static Intent destReachedIntent;
 
     static AlarmManager alarmManager;
-    //static AlarmManager updateAlarmManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,9 +88,11 @@ public class ActiveAlarm extends ActionBarActivity {
     {
         // cancel the set alarm
 
-        try {
+        try
+        {
             alarmManager.cancel(destReachedPIntent);
             alarmManager.cancel(updateAlarmPIntent);
+            Log.d("AABothAlarmsCancelled>", "Both alarms in ActiveAlarm has been successfully cancelled.");
         }
         catch (Exception e)
         {
@@ -114,8 +105,8 @@ public class ActiveAlarm extends ActionBarActivity {
         boolean deleted = file.delete();
 
         // go to the SetTrainAndStation activity to enable users to select a new alarm
-        // Intent startAgainIntent = new Intent(this, SetTrainAndStation.class);
-        // startActivity(startAgainIntent);
+        Intent startAgainIntent = new Intent(this, SetTrainAndStation.class);
+        startActivity(startAgainIntent);
     }
 
     public class ReadFromFile extends AsyncTask<Void, Void, Void>
@@ -164,13 +155,6 @@ public class ActiveAlarm extends ActionBarActivity {
                 trainNoStr = jsonObject.getString(SetTrainAndStation.TAG_TRAIN_NO);
                 stationNameStr = jsonObject.getString(SetTrainAndStation.TAG_STATION_NAME);
 
-                Log.d("actTimeArr>", actTimeArrivalStr);
-                Log.d("schTimeArr>", schTimeArrivalStr);
-                Log.d("actTimeDept>", actTimeDeptStr);
-                Log.d("schTimeDept>", schTimeDeptStr);
-                Log.d("Train name>", trainNameStr);
-                Log.d("Train no>", trainNoStr);
-
             }
             catch (JSONException e)
             {
@@ -190,18 +174,18 @@ public class ActiveAlarm extends ActionBarActivity {
             // set the alarm
             if (actTimeArrivalStr.contains("E.T.A.: "))
             {
-                Log.d("ETA Flag:", "ETA detected");
+                Log.d("AAETA Flag:", "ETA detected");
                 // remove the ETA sign
                 actTimeArrivalStr = actTimeArrivalStr.substring("E.T.A.: ".length());
-                Log.d("UpdatedArrivalTime>", actTimeArrivalStr);
+                Log.d("AAUpdatedArrivalTime>", actTimeArrivalStr);
 
             }
 
             // debug
 
             String date = new SimpleDateFormat("dd-MM-yyyy").format(new Date());
-            actTimeArrivalStr = date + " " + "06:28 PM"; // replace time by actTimeArrivalStr
-            Log.d("ETAWithDate>", actTimeArrivalStr);
+            actTimeArrivalStr = date + " " + actTimeArrivalStr; // replace time by actTimeArrivalStr
+            Log.d("AAETAWithDate>", actTimeArrivalStr);
 
             // convert the date to SimpleDateFormat first
             SimpleDateFormat sdff = new SimpleDateFormat("dd-MM-yyyy hh:mm a", Locale.ENGLISH);
@@ -212,45 +196,26 @@ public class ActiveAlarm extends ActionBarActivity {
             }
             catch (ParseException e)
             {
-                Log.d("TimeParseError>", e.getMessage());
+                Log.d("AATimeParseError>", e.getMessage());
                 e.printStackTrace();
             }
-
-                /* Retrieve a PendingIntent that will perform a broadcast
-                alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                Intent alarmIntent = new Intent(thisContext, AlarmReceiver.class);
-                pendingIntent = PendingIntent.getBroadcast(ActiveAlarm.this, 0, alarmIntent, 0);
-
-
-                int interval = 8000;
-
-                // set the single alarm
-
-                //alarmManager.set(AlarmManager.RTC_WAKEUP, arrivalTimeForAlarm.getTime() - TEN_MINUTES_IN_MILLI_SECONDS, pendingIntent);
-                //Toast.makeText(thisContext, "Single alarm set for " + actTimeArrivalStr, Toast.LENGTH_SHORT).show();
-
-                // set the multiple alarm
-                alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), interval, pendingIntent);*/
-
-            Log.d("CurrentSysTimeMS:", Long.toString(System.currentTimeMillis()));
-            Log.d("ActTimeMS:", Long.toString(arrivalTimeForAlarm.getTimeInMillis()));
 
 
             // set the single alarm
             //Create a new PendingIntent and add it to the AlarmManager
-            Intent destReachedIntent = new Intent(ActiveAlarm.this, AlarmReceiverActivity.class);
+            destReachedIntent = new Intent(ActiveAlarm.this, AlarmReceiverActivity.class);
             destReachedPIntent = PendingIntent.getActivity(ActiveAlarm.this,
                     12345, destReachedIntent, PendingIntent.FLAG_CANCEL_CURRENT);
             alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
-            alarmManager.set(AlarmManager.RTC_WAKEUP, arrivalTimeForAlarm.getTimeInMillis(),
+            alarmManager.set(AlarmManager.RTC_WAKEUP, arrivalTimeForAlarm.getTimeInMillis() - AlarmManager.INTERVAL_FIFTEEN_MINUTES,
                     destReachedPIntent);
 
             // set the multiple alarm
             Intent updateAlarmIntent = new Intent(ActiveAlarm.this, AlarmReceiver.class);
             alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
             updateAlarmPIntent = PendingIntent.getBroadcast(ActiveAlarm.this, 0, updateAlarmIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-            alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + TEN_MINUTES_IN_MILLI_SECONDS,
-                    TEN_MINUTES_IN_MILLI_SECONDS, updateAlarmPIntent);
+            alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + AlarmManager.INTERVAL_FIFTEEN_MINUTES,
+                    AlarmManager.INTERVAL_FIFTEEN_MINUTES, updateAlarmPIntent);
 
 
             // set the text in the TextViews
@@ -263,6 +228,9 @@ public class ActiveAlarm extends ActionBarActivity {
             // set the station name
             TextView stationNameTV = (TextView) findViewById(R.id.station_name);
             stationNameTV.setText(stationNameStr);
+            // set the ETA
+            TextView etaView = (TextView) findViewById(R.id.eta_tv);
+            etaView.setText(actTimeArrivalStr);
 
         }
     }

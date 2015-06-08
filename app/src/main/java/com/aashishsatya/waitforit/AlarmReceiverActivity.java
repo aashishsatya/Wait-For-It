@@ -36,6 +36,9 @@ public class AlarmReceiverActivity extends Activity {
         try
         {
             ActiveAlarm.alarmManager.cancel(ActiveAlarm.updateAlarmPIntent);
+            Log.d("ARACldUpdateAlarm>", "Cancelled the repeating alarm after ringing");
+            ActiveAlarm.alarmManager.cancel(ActiveAlarm.updateAlarmPIntent);
+            Log.d("ARACldSingleAlarm>", "Cancelled the single alarm after ringing");
         }
         catch (Exception e)
         {

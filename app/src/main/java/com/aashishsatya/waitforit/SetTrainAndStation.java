@@ -13,10 +13,9 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
-
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,16 +32,22 @@ public class SetTrainAndStation extends ActionBarActivity {
 
     String trainNoStr;
     String trainNameStr;
-    String url;
+    static String url;
     String jsonStr;
+    String etaStr;  // ETA in string
+
+    static String API_KEY = "bin87gv4273";
+    static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+    static String date_str = sdf.format(new Date());
 
     // these are mostly for passing strings to other activities
     static String FILENAME = "waitdetails.txt";
     static String ALL_STATION_DETAILS_JSON_STR = "allstationdetailsjsonstr";
-    static String SELECTED_STATION_POSITION = "selectedstation";
+    static String SELECTED_STATION_POSITION = "selectedstationposition";
     static String SELECTED_STATION_NAME = "selectedstationname";
     static String TRAIN_NAME = "trainname";
     static String TRAIN_NO = "trainno";
+    static String STATION_ETA = "stationeta";
 
     // these are for getting the required field from the JSON Object
     static String TAG_TOTAL = "total";
@@ -88,51 +93,31 @@ public class SetTrainAndStation extends ActionBarActivity {
 
     public void onClick(View view)
     {
-        // read text from file waitdetails.txt and send to next activity
-        // String jsonStr = "";
-        /*
-        try
-        {
-            FileInputStream fin = openFileInput(FILENAME);
-            int c;
-            try
-            {
-                while( (c = fin.read()) != -1)
-                {
-                    jsonStr = jsonStr + Character.toString((char)c);
-                }
-                fin.close();
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
-
-            // delete file for now
-            // we will remove this later and delete the file only when the alarm has
-            // been set off
-            File dir = getFilesDir();
-            File file = new File(dir, FILENAME);
-            boolean deleted = file.delete();
-
-
-            //Toast.makeText(thisContext, jsonStr, Toast.LENGTH_LONG).show();
-        }
-        catch (FileNotFoundException e)
-        {
-            e.printStackTrace();
-        }
-        */
 
         // we still need the position number of the item selected on the spinner
         Spinner spinner = (Spinner) findViewById(R.id.spinner);
         int itemPosition = spinner.getSelectedItemPosition();
         String selectedStationNameStr = (String) spinner.getSelectedItem();
 
-        Intent confirmDetailsIntent = new Intent(this, ConfirmTrainAndStation.class);
+        // get the ETA
 
-        Log.d("jsonStrAash>:", jsonStr);
-        Log.d("trainNameStr:>", trainNameStr);
+        Log.d("STASJSONStr>", jsonStr);
+
+        etaStr = "";
+        try
+        {
+            JSONObject jsonObject = new JSONObject(jsonStr);
+            JSONArray jsonArray = jsonObject.getJSONArray(TAG_ALL_STATION_DETAILS);
+            JSONObject reqdStationJSONObj = jsonArray.getJSONObject(itemPosition);
+            etaStr = reqdStationJSONObj.getString(TAG_ACT_ARR);
+        }
+        catch (JSONException e)
+        {
+            e.printStackTrace();
+        }
+
+
+        Intent confirmDetailsIntent = new Intent(this, ConfirmTrainAndStation.class);
 
         // put all the extras
         // put the JSON String that we obtained
@@ -145,6 +130,8 @@ public class SetTrainAndStation extends ActionBarActivity {
         confirmDetailsIntent.putExtra(TRAIN_NAME, trainNameStr);
         // put the station name
         confirmDetailsIntent.putExtra(SELECTED_STATION_NAME, selectedStationNameStr);
+        // put the ETA
+        confirmDetailsIntent.putExtra(STATION_ETA, etaStr);
 
         // start the activity that lets user confirm the details
         startActivity(confirmDetailsIntent);
@@ -154,26 +141,10 @@ public class SetTrainAndStation extends ActionBarActivity {
     public void getStations(View view)
     {
         // we need to get the details off the JSON server
-        String API_KEY = "bin87gv4273";
 
         // get the train number that was entered
         EditText trainNo = (EditText) findViewById(R.id.train_no);
         trainNoStr = trainNo.getText().toString();
-
-        /*
-
-        Calendar date = Calendar.getInstance();
-
-        Toast.makeText(this, String.valueOf(date.YEAR), Toast.LENGTH_LONG).show();
-        Toast.makeText(this, String.valueOf(date.MONTH), Toast.LENGTH_LONG).show();
-        Toast.makeText(this, String.valueOf(date.DAY_OF_MONTH), Toast.LENGTH_LONG).show();
-
-        String date_str = "" + String.valueOf(date.YEAR) + String.valueOf(date.MONTH) + String.valueOf(date.DAY_OF_MONTH);
-
-        */
-
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-        String date_str = sdf.format(new Date());
 
         url = "http://api.railwayapi.com/live/train/" + trainNoStr + "/doj/"
                 + date_str + "/apikey/" + API_KEY;
@@ -186,8 +157,6 @@ public class SetTrainAndStation extends ActionBarActivity {
      * Async task class to get json by making HTTP call
      * */
     public class GetTrainDetails extends AsyncTask<Void, Void, Void> {
-
-        //String jsonStr;    // the string obtained after the JSON Query
 
         public ArrayList<String> stationsListStrForSpinner;
         JSONArray allStationsDetailsJSONArr;
@@ -205,7 +174,7 @@ public class SetTrainAndStation extends ActionBarActivity {
 
             // Making a request to url and getting response
             jsonStr = sh.makeServiceCall(url, ServiceHandler.GET);
-            //Log.d("jsonStr", "> " + jsonStr);
+            Log.d("STASjsonStr>", "Fresh from server: " + jsonStr);
 
             // jsonStr now has the string in JSON
             // now to create the spinner for selecting the station
@@ -259,51 +228,6 @@ public class SetTrainAndStation extends ActionBarActivity {
                 //Toast.makeText(thisContext, "Sorry, try again", Toast.LENGTH_LONG).show();
             }
 
-            /*
-
-            if (jsonStr != null) {
-                try {
-                    JSONObject jsonObj = new JSONObject(jsonStr);
-
-                    // Getting JSON Array node
-                    contacts = jsonObj.getJSONArray(TAG_CONTACTS);
-
-                    // looping through All Contacts
-                    for (int i = 0; i < contacts.length(); i++) {
-                        JSONObject c = contacts.getJSONObject(i);
-
-                        String id = c.getString(TAG_ID);
-                        String name = c.getString(TAG_NAME);
-                        String email = c.getString(TAG_EMAIL);
-                        String address = c.getString(TAG_ADDRESS);
-                        String gender = c.getString(TAG_GENDER);
-
-                        // Phone node is JSON Object
-                        JSONObject phone = c.getJSONObject(TAG_PHONE);
-                        String mobile = phone.getString(TAG_PHONE_MOBILE);
-                        String home = phone.getString(TAG_PHONE_HOME);
-                        String office = phone.getString(TAG_PHONE_OFFICE);
-
-                        // tmp hashmap for single contact
-                        HashMap<String, String> contact = new HashMap<String, String>();
-
-                        // adding each child node to HashMap key => value
-                        contact.put(TAG_ID, id);
-                        contact.put(TAG_NAME, name);
-                        contact.put(TAG_EMAIL, email);
-                        contact.put(TAG_PHONE_MOBILE, mobile);
-
-                        // adding contact to contact list
-                        contactList.add(contact);
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                Log.e("ServiceHandler", "Couldn't get any data from the url");
-            }
-            */
-
             return null;
         }
 
@@ -324,36 +248,6 @@ public class SetTrainAndStation extends ActionBarActivity {
                 @Override
                 public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
 
-                    // write the details about the required station in a file
-                    // this checks if an alarm exists or not from the first activity
-
-                    // these exceptions probably won't even arise
-
-                    /*
-
-                    FileOutputStream fOut;
-                    try
-                    {
-                        fOut = openFileOutput(FILENAME, MODE_WORLD_READABLE);
-                        try
-                        {
-                            fOut.write(jsonStr.getBytes());
-                            fOut.close();
-                        }
-                        catch (java.io.IOException e)
-                        {
-                            Log.d("File Error: ", e.getMessage());
-                            e.printStackTrace();
-                        }
-                    }
-                    // this catch is for checking exceptions while opening the file
-                    catch (FileNotFoundException e)
-                    {
-                        Log.d("File not found: ", e.getMessage());
-                        e.printStackTrace();
-                    }
-
-                    */
                 }
 
                 @Override
